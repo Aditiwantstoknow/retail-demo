@@ -1,6 +1,10 @@
+// 🔥 API URL
+const API = "https://c2adx0o6k7.execute-api.us-east-1.amazonaws.com";
+
 let expenses = [];
 let budgets = {};
 
+// ---------------- TAB SWITCH ----------------
 function showTab(tab) {
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
     document.getElementById(tab).classList.add("active");
@@ -9,23 +13,69 @@ function showTab(tab) {
     event.target.classList.add("active");
 }
 
-/* ADD EXPENSE */
-function addExpense() {
-    let amount = parseFloat(document.getElementById("amount").value);
+// ---------------- ADD EXPENSE (CONNECTED TO BACKEND) ----------------
+async function addExpense() {
+    let amount = document.getElementById("amount").value;
     let category = document.getElementById("category").value;
     let note = document.getElementById("note").value;
 
-    let date = new Date().toLocaleString();
+    if (!amount) {
+        alert("Enter amount");
+        return;
+    }
 
-    let expense = { amount, category, note, date };
-    expenses.push(expense);
+    await fetch(`${API}/add-expense`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            amount,
+            category,
+            note
+        })
+    });
+
+    // clear inputs
+    document.getElementById("amount").value = "";
+    document.getElementById("note").value = "";
+
+    loadExpenses();
+}
+
+// ---------------- LOAD EXPENSES ----------------
+async function loadExpenses() {
+    let res = await fetch(`${API}/expenses`);
+    let data = await res.json();
+
+    // 🔥 convert backend format → frontend format
+    expenses = data.map(e => ({
+        amount: e.amount,
+        category: e.category,
+        note: e.note,
+        date: `${e.date} ${e.time}`
+    }));
 
     renderTable();
     updateStats();
     updateCharts();
 }
 
-/* TABLE */
+// ---------------- LOAD BUDGETS ----------------
+async function loadBudgets() {
+    let res = await fetch(`${API}/budgets`);
+    let data = await res.json();
+
+    budgets = {};
+
+    data.forEach(b => {
+        budgets[b.category] = b.limit;
+    });
+
+    updateStats();
+}
+
+// ---------------- TABLE ----------------
 function renderTable() {
     let table = document.getElementById("recordsTable");
     table.innerHTML = "";
@@ -41,13 +91,13 @@ function renderTable() {
     });
 }
 
-/* BUDGET */
+// ---------------- BUDGET (LOCAL ONLY FOR NOW) ----------------
 function setBudget(category, value) {
     budgets[category] = parseFloat(value);
     updateStats();
 }
 
-/* STATS */
+// ---------------- STATS ----------------
 function updateStats() {
     let total = expenses.reduce((a, b) => a + b.amount, 0);
     let totalBudget = Object.values(budgets).reduce((a, b) => a + b, 0);
@@ -59,7 +109,7 @@ function updateStats() {
     updateTimeline(total, totalBudget);
 }
 
-/* TIMELINE */
+// ---------------- TIMELINE ----------------
 function updateTimeline(total, budget) {
     let days = new Date().getDate();
     let percent = (days / 30) * 100;
@@ -69,20 +119,20 @@ function updateTimeline(total, budget) {
         "Day " + days + "/30 | Budget Used: ₹" + total;
 }
 
-/* CHART */
+// ---------------- CHART ----------------
 let chart = new Chart(document.getElementById("chart"), {
     type: 'doughnut',
     data: {
         labels: ["Food", "Transport", "Entertainment"],
         datasets: [{
-            data: [0,0,0],
-            backgroundColor: ["#ff6384","#36a2eb","#ffce56"]
+            data: [0, 0, 0],
+            backgroundColor: ["#ff6384", "#36a2eb", "#ffce56"]
         }]
     }
 });
 
 function updateCharts() {
-    let data = { Food:0, Transport:0, Entertainment:0 };
+    let data = { Food: 0, Transport: 0, Entertainment: 0 };
 
     expenses.forEach(e => {
         data[e.category] += e.amount;
@@ -91,3 +141,9 @@ function updateCharts() {
     chart.data.datasets[0].data = Object.values(data);
     chart.update();
 }
+
+// ---------------- AUTO LOAD ----------------
+window.onload = () => {
+    loadExpenses();
+    loadBudgets();
+};
