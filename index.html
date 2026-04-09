@@ -1,12 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AWS Retail Demo</title>
+<meta charset="UTF-8">
+<title>BudgetSense</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-  <h1>Retail Platform</h1>
-  <div id="output">Welcome!!!</div>
 
-  <script src="app.js"></script>
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar">
+    <h1 class="logo">BudgetSense</h1>
+
+    <nav>
+        <button onclick="showTab('records')" class="active">Records</button>
+        <button onclick="showTab('budgets')">Budgets</button>
+        <button onclick="showTab('analytics')">Analytics</button>
+        <button onclick="showTab('accounts')">Accounts</button>
+    </nav>
+</header>
+
+<!-- RECORDS -->
+<section id="records" class="section active">
+
+    <!-- TOP CARDS -->
+    <div class="cards">
+        <div class="card"><p>Total Spent</p><h2 id="totalSpent">₹0</h2></div>
+        <div class="card"><p>Total Budget</p><h2 id="totalBudget">₹25000</h2></div>
+        <div class="card"><p>Remaining</p><h2 id="remaining">₹25000</h2></div>
+        <div class="card"><p>Anomalies</p><h2>0</h2></div>
+    </div>
+
+    <!-- ADD EXPENSE -->
+    <div class="grid">
+        <div class="box">
+            <h3>Add Expense</h3>
+
+            <input id="amount" placeholder="Amount ₹">
+            <select id="category">
+                <option>Food</option>
+                <option>Transport</option>
+                <option>Entertainment</option>
+            </select>
+
+            <input id="note" placeholder="Merchant / Note">
+            <button onclick="addExpense()">+ Record Expense</button>
+        </div>
+
+        <!-- CATEGORY SNAPSHOT -->
+        <div class="box">
+            <h3>Category Snapshot</h3>
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-box">
+        <h3>Recent Transactions</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Note</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody id="recordsTable"></tbody>
+        </table>
+    </div>
+
+</section>
+
+<!-- BUDGET -->
+<section id="budgets" class="section">
+    <h2>Set Category Budgets</h2>
+
+    <div class="budget-item">
+        Food <input type="number" onchange="setBudget('Food', this.value)">
+    </div>
+    <div class="budget-item">
+        Transport <input type="number" onchange="setBudget('Transport', this.value)">
+    </div>
+    <div class="budget-item">
+        Entertainment <input type="number" onchange="setBudget('Entertainment', this.value)">
+    </div>
+</section>
+
+<!-- ANALYTICS -->
+<section id="analytics" class="section">
+    <h2>Analytics</h2>
+
+    <canvas id="barChart"></canvas>
+
+    <!-- Timeline -->
+    <div class="timeline">
+        <h3>Budget Timeline</h3>
+        <div class="timeline-bar">
+            <div id="timelineFill"></div>
+        </div>
+        <p id="timelineText"></p>
+    </div>
+</section>
+
+<!-- ACCOUNTS -->
+<section id="accounts" class="section">
+    <h2>Account Details</h2>
+
+    <div class="account-box">
+        <input placeholder="Account Name">
+        <input placeholder="Account Number">
+        <input placeholder="Balance">
+        <button>Add Account</button>
+    </div>
+</section>
+
+<script src="app.js"></script>
 </body>
 </html>
